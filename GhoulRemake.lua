@@ -1,6 +1,7 @@
 --========================
--- GHOUL HUB | FIXED
--- DELTA + BROOKHAVEN
+-- GHOUL HUB | REMAKE
+-- SIDEBAR BRANCA / TEXTO ROXO
+-- DELTA COMPATÍVEL
 --========================
 
 if not game:IsLoaded() then
@@ -10,7 +11,6 @@ end
 -- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 
 local player = Players.LocalPlayer
@@ -19,10 +19,9 @@ local hum = char:WaitForChild("Humanoid")
 local hrp = char:WaitForChild("HumanoidRootPart")
 
 --========================
--- MÚSICA (FUNCIONA)
+-- MÚSICA
 --========================
 local music = Instance.new("Sound")
-music.Name = "GhoulMusic"
 music.Parent = SoundService
 music.SoundId = "rbxassetid://1837635154"
 music.Volume = 2
@@ -32,21 +31,18 @@ music:Play()
 --========================
 -- GUI
 --========================
-local gui = Instance.new("ScreenGui")
+local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "GhoulHub"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
 
 --========================
 -- BOTÃO FLUTUANTE
 --========================
-local openBtn = Instance.new("ImageButton")
-openBtn.Parent = gui
+local openBtn = Instance.new("ImageButton", gui)
 openBtn.Size = UDim2.new(0,60,0,60)
 openBtn.Position = UDim2.new(0.05,0,0.4,0)
-openBtn.BackgroundColor3 = Color3.fromRGB(120,0,180)
+openBtn.BackgroundColor3 = Color3.fromRGB(130,0,200)
 openBtn.Image = "rbxassetid://74356605425526"
-openBtn.AutoButtonColor = true
 openBtn.Active = true
 openBtn.Draggable = true
 Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
@@ -54,26 +50,25 @@ Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
 --========================
 -- HUB
 --========================
-local main = Instance.new("Frame")
-main.Parent = gui
+local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0,520,0,330)
 main.Position = UDim2.new(0.5,-260,0.5,-165)
-main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 main.Visible = false
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
 
--- Sidebar
-local side = Instance.new("Frame")
-side.Parent = main
-side.Size = UDim2.new(0,130,1,0)
+--========================
+-- SIDEBAR BRANCA
+--========================
+local side = Instance.new("Frame", main)
+side.Size = UDim2.new(0,140,1,0)
 side.BackgroundColor3 = Color3.fromRGB(245,245,245)
 Instance.new("UICorner", side).CornerRadius = UDim.new(0,14)
 
 -- Conteúdo
-local content = Instance.new("Frame")
-content.Parent = main
-content.Position = UDim2.new(0,130,0,0)
-content.Size = UDim2.new(1,-130,1,0)
+local content = Instance.new("Frame", main)
+content.Position = UDim2.new(0,140,0,0)
+content.Size = UDim2.new(1,-140,1,0)
 content.BackgroundTransparency = 1
 
 --========================
@@ -81,19 +76,17 @@ content.BackgroundTransparency = 1
 --========================
 local tabs = {}
 
-local function createTab(name, order)
-	local btn = Instance.new("TextButton")
-	btn.Parent = side
+local function createTab(text, order)
+	local btn = Instance.new("TextButton", side)
 	btn.Size = UDim2.new(1,0,0,45)
 	btn.Position = UDim2.new(0,0,0,(order-1)*50)
-	btn.Text = name
+	btn.Text = text
 	btn.Font = Enum.Font.GothamBold
 	btn.TextSize = 14
-	btn.TextColor3 = Color3.fromRGB(120,0,180)
+	btn.TextColor3 = Color3.fromRGB(140,0,200) -- ROXO
 	btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
 
-	local frame = Instance.new("Frame")
-	frame.Parent = content
+	local frame = Instance.new("Frame", content)
 	frame.Size = UDim2.new(1,0,1,0)
 	frame.Visible = false
 	frame.BackgroundTransparency = 1
@@ -116,18 +109,17 @@ local tabSet    = createTab("Settings",3)
 tabs[1].Visible = true
 
 --========================
--- BOTÃO PADRÃO
+-- BOTÕES
 --========================
 local function makeButton(parent,text,y,callback)
-	local b = Instance.new("TextButton")
-	b.Parent = parent
+	local b = Instance.new("TextButton", parent)
 	b.Size = UDim2.new(0,220,0,42)
 	b.Position = UDim2.new(0,20,0,y)
 	b.Text = text
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 14
 	b.TextColor3 = Color3.new(1,1,1)
-	b.BackgroundColor3 = Color3.fromRGB(120,0,180)
+	b.BackgroundColor3 = Color3.fromRGB(140,0,200)
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
 	b.MouseButton1Click:Connect(callback)
 end
@@ -143,22 +135,15 @@ makeButton(tabMove,"Jump",80,function()
 	hum.JumpPower = 90
 end)
 
-makeButton(tabMove,"Reset Speed",130,function()
-	hum.WalkSpeed = 16
-	hum.JumpPower = 50
-end)
-
 local flying = false
-makeButton(tabMove,"Fly",180,function()
+makeButton(tabMove,"Fly",130,function()
 	flying = not flying
 	if flying then
-		local bv = Instance.new("BodyVelocity")
+		local bv = Instance.new("BodyVelocity", hrp)
 		bv.Name = "FlyForce"
 		bv.MaxForce = Vector3.new(1,1,1) * 1e5
-		bv.Parent = hrp
-
 		RunService.RenderStepped:Connect(function()
-			if flying and bv.Parent then
+			if flying then
 				bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * 60
 			end
 		end)
@@ -167,10 +152,6 @@ makeButton(tabMove,"Fly",180,function()
 			hrp.FlyForce:Destroy()
 		end
 	end
-end)
-
-makeButton(tabPlayer,"Reset Character",30,function()
-	char:BreakJoints()
 end)
 
 makeButton(tabSet,"Mute Music",30,function()
