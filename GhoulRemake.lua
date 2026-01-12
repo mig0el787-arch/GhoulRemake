@@ -1,170 +1,182 @@
---========================
--- GHOUL HUB | REMAKE
--- SIDEBAR BRANCA / TEXTO ROXO
--- DELTA COMPATÍVEL
---========================
+-- Ghoul Hub Remake | Brookhaven | Delta Executor
+-- UI clean roxo/branco + botão flutuante com imagem
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
--- Serviços
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local SoundService = game:GetService("SoundService")
+local UIS = game:GetService("UserInputService")
+local LP = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local hum = char:WaitForChild("Humanoid")
-local hrp = char:WaitForChild("HumanoidRootPart")
+-- ===== PROTEÇÃO =====
+pcall(function()
+	if game.PlaceId ~= 4924922222 then
+		warn("Ghoul Hub: Apenas Brookhaven")
+	end
+end)
 
---========================
--- MÚSICA
---========================
-local music = Instance.new("Sound")
-music.Parent = SoundService
-music.SoundId = "rbxassetid://1837635154"
-music.Volume = 2
-music.Looped = true
-music:Play()
-
---========================
--- GUI
---========================
-local gui = Instance.new("ScreenGui", player.PlayerGui)
+-- ===== GUI ROOT =====
+local gui = Instance.new("ScreenGui")
 gui.Name = "GhoulHub"
 gui.ResetOnSpawn = false
+gui.Parent = LP:WaitForChild("PlayerGui")
 
---========================
--- BOTÃO FLUTUANTE
---========================
-local openBtn = Instance.new("ImageButton", gui)
-openBtn.Size = UDim2.new(0,60,0,60)
-openBtn.Position = UDim2.new(0.05,0,0.4,0)
-openBtn.BackgroundColor3 = Color3.fromRGB(130,0,200)
-openBtn.Image = "rbxassetid://74356605425526"
-openBtn.Active = true
-openBtn.Draggable = true
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
+-- ===== MÚSICA DE ENTRADA (EMO / CLEAN) =====
+local sound = Instance.new("Sound")
+sound.SoundId = "rbxassetid://1843529274" -- emo/clean vibe
+sound.Volume = 2
+sound.Looped = false
+sound.Parent = gui
+sound:Play()
 
---========================
--- HUB
---========================
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0,520,0,330)
-main.Position = UDim2.new(0.5,-260,0.5,-165)
+-- ===== BOTÃO FLUTUANTE (CÍRCULO) =====
+local floatBtn = Instance.new("ImageButton")
+floatBtn.Size = UDim2.fromOffset(64,64)
+floatBtn.Position = UDim2.new(0,20,0.5,-32)
+floatBtn.Image = "rbxassetid://74356605425526"
+floatBtn.BackgroundColor3 = Color3.fromRGB(120,0,170)
+floatBtn.AutoButtonColor = false
+floatBtn.Parent = gui
+
+local corner = Instance.new("UICorner", floatBtn)
+corner.CornerRadius = UDim.new(1,0)
+
+-- Drag
+local dragging, dragStart, startPos
+floatBtn.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.Touch or 
+       i.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = i.Position
+		startPos = floatBtn.Position
+	end
+end)
+
+floatBtn.InputEnded:Connect(function()
+	dragging = false
+end)
+
+UIS.InputChanged:Connect(function(i)
+	if dragging and 
+       (i.UserInputType == Enum.UserInputType.Touch or 
+        i.UserInputType == Enum.UserInputType.MouseMovement) then
+		local delta = i.Position - dragStart
+		floatBtn.Position = UDim2.new(
+			startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+-- ===== HUB PRINCIPAL =====
+local main = Instance.new("Frame")
+main.Size = UDim2.fromScale(0.55,0.55)
+main.Position = UDim2.fromScale(0.5,0.5)
+main.AnchorPoint = Vector2.new(0.5,0.5)
 main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 main.Visible = false
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
+main.Parent = gui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,16)
 
---========================
--- SIDEBAR BRANCA
---========================
-local side = Instance.new("Frame", main)
-side.Size = UDim2.new(0,140,1,0)
-side.BackgroundColor3 = Color3.fromRGB(245,245,245)
-Instance.new("UICorner", side).CornerRadius = UDim.new(0,14)
+-- Topo
+local top = Instance.new("Frame", main)
+top.Size = UDim2.new(1,0,0,60)
+top.BackgroundColor3 = Color3.fromRGB(90,0,140)
+Instance.new("UICorner", top).CornerRadius = UDim.new(0,16)
 
--- Conteúdo
-local content = Instance.new("Frame", main)
-content.Position = UDim2.new(0,140,0,0)
-content.Size = UDim2.new(1,-140,1,0)
-content.BackgroundTransparency = 1
+local title = Instance.new("TextLabel", top)
+title.Size = UDim2.new(1,0,1,0)
+title.BackgroundTransparency = 1
+title.Text = "GHOUL HUB"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
 
---========================
--- SISTEMA DE ABAS
---========================
-local tabs = {}
+-- ===== SIDEBAR =====
+local sidebar = Instance.new("Frame", main)
+sidebar.Size = UDim2.new(0,160,1,-60)
+sidebar.Position = UDim2.new(0,0,0,60)
+sidebar.BackgroundColor3 = Color3.fromRGB(240,240,240)
 
-local function createTab(text, order)
-	local btn = Instance.new("TextButton", side)
-	btn.Size = UDim2.new(1,0,0,45)
-	btn.Position = UDim2.new(0,0,0,(order-1)*50)
-	btn.Text = text
-	btn.Font = Enum.Font.GothamBold
-	btn.TextSize = 14
-	btn.TextColor3 = Color3.fromRGB(140,0,200) -- ROXO
-	btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+local list = Instance.new("UIListLayout", sidebar)
+list.Padding = UDim.new(0,6)
 
-	local frame = Instance.new("Frame", content)
-	frame.Size = UDim2.new(1,0,1,0)
-	frame.Visible = false
-	frame.BackgroundTransparency = 1
-
-	btn.MouseButton1Click:Connect(function()
-		for _,v in pairs(tabs) do
-			v.Visible = false
-		end
-		frame.Visible = true
-	end)
-
-	table.insert(tabs, frame)
-	return frame
-end
-
-local tabPlayer = createTab("Player",1)
-local tabMove   = createTab("Movement",2)
-local tabSet    = createTab("Settings",3)
-
-tabs[1].Visible = true
-
---========================
--- BOTÕES
---========================
-local function makeButton(parent,text,y,callback)
-	local b = Instance.new("TextButton", parent)
-	b.Size = UDim2.new(0,220,0,42)
-	b.Position = UDim2.new(0,20,0,y)
-	b.Text = text
+local function sideBtn(txt)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-10,0,40)
+	b.Position = UDim2.new(0,5,0,0)
+	b.Text = txt
 	b.Font = Enum.Font.GothamBold
 	b.TextSize = 14
-	b.TextColor3 = Color3.new(1,1,1)
-	b.BackgroundColor3 = Color3.fromRGB(140,0,200)
+	b.TextColor3 = Color3.fromRGB(80,0,120)
+	b.BackgroundColor3 = Color3.fromRGB(255,255,255)
 	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
-	b.MouseButton1Click:Connect(callback)
+	b.Parent = sidebar
+	return b
 end
 
---========================
--- FUNÇÕES
---========================
-makeButton(tabMove,"Speed",30,function()
-	hum.WalkSpeed = 32
+-- ===== CONTEÚDO =====
+local content = Instance.new("Frame", main)
+content.Size = UDim2.new(1,-160,1,-60)
+content.Position = UDim2.new(0,160,0,60)
+content.BackgroundTransparency = 1
+
+local function clear()
+	for _,v in ipairs(content:GetChildren()) do
+		if v:IsA("Frame") then
+			v:Destroy()
+		end
+	end
+end
+
+local function page(name)
+	clear()
+	local f = Instance.new("Frame", content)
+	f.Size = UDim2.new(1,0,1,0)
+	f.BackgroundTransparency = 1
+
+	local lbl = Instance.new("TextLabel", f)
+	lbl.Size = UDim2.new(1,0,0,40)
+	lbl.Text = name
+	lbl.Font = Enum.Font.GothamBold
+	lbl.TextSize = 20
+	lbl.TextColor3 = Color3.fromRGB(180,120,255)
+	lbl.BackgroundTransparency = 1
+end
+
+-- ===== FUNÇÕES =====
+sideBtn("Fly").MouseButton1Click:Connect(function()
+	page("Fly")
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
-makeButton(tabMove,"Jump",80,function()
-	hum.JumpPower = 90
-end)
-
-local flying = false
-makeButton(tabMove,"Fly",130,function()
-	flying = not flying
-	if flying then
-		local bv = Instance.new("BodyVelocity", hrp)
-		bv.Name = "FlyForce"
-		bv.MaxForce = Vector3.new(1,1,1) * 1e5
-		RunService.RenderStepped:Connect(function()
-			if flying then
-				bv.Velocity = workspace.CurrentCamera.CFrame.LookVector * 60
-			end
-		end)
-	else
-		if hrp:FindFirstChild("FlyForce") then
-			hrp.FlyForce:Destroy()
+sideBtn("Noclip").MouseButton1Click:Connect(function()
+	page("Noclip")
+	for _,v in pairs(LP.Character:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.CanCollide = false
 		end
 	end
 end)
 
-makeButton(tabSet,"Mute Music",30,function()
-	music.Playing = not music.Playing
+sideBtn("Tools").MouseButton1Click:Connect(function()
+	page("Tools")
 end)
 
-makeButton(tabSet,"Close Hub",80,function()
+sideBtn("House").MouseButton1Click:Connect(function()
+	page("House")
+end)
+
+sideBtn("Vehicle").MouseButton1Click:Connect(function()
+	page("Vehicle")
+end)
+
+sideBtn("Close").MouseButton1Click:Connect(function()
 	main.Visible = false
 end)
 
---========================
--- ABRIR HUB
---========================
-openBtn.MouseButton1Click:Connect(function()
+-- ===== TOGGLE HUB =====
+floatBtn.MouseButton1Click:Connect(function()
 	main.Visible = not main.Visible
 end)
